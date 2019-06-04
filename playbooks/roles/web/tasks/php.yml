@@ -1,0 +1,33 @@
+# PHPのインストール
+
+- name: remiをインストール
+  yum:
+    name: https://rpms.remirepo.net/enterprise/remi-release-7.rpm
+    state: installed
+
+- name: yum-config-managerコマンドのインストール
+  yum:
+    name: yum-utils
+    state: installed
+
+- name: remi-php71リポジトリを有効化
+  shell: yum-config-manager --enable remi-php71
+
+- name: PHP7.1をインストール
+  yum:
+    name: '{{ item }}'
+    state: installed
+  with_items:
+    - php
+    - php-intl
+    - php-cli
+    - php-common
+    - php-dbg
+    - php-devel
+    - php-gd
+    - php-mbstring
+    - php-mcrypt
+    - php-mysqlnd
+    - php-pdo
+    - php-xml
+    - php-zip

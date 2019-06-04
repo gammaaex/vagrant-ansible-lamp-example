@@ -1,0 +1,25 @@
+# AdminサーバのTask
+
+- name: phpMyAdminをインストール
+  yum:
+    name: phpMyAdmin
+    state: installed
+
+- name: config.inc.phpを転送
+  template:
+    src: config.inc.php
+    dest: /etc/phpMyAdmin/config.inc.php
+    owner: root
+    group: root
+    mode: 0644
+
+- name: phpMyAdmin.confを転送
+  template:
+    src: phpMyAdmin.conf
+    dest: /etc/httpd/conf.d/phpMyAdmin.conf
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Apacheを再起動
+  command: apachectl restart

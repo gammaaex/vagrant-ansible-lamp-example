@@ -1,0 +1,3 @@
+# AdminサーバのTask
+
+- include: phpmyadmin.yml

@@ -1,0 +1,12 @@
+mysql:
+  root:
+    password: root
+  users:
+    - username: user1
+      password: password1
+    - username: user2
+      password: password2
+  database:
+    development: app_development
+    test: app_test
+    production: app_production

@@ -1,0 +1,100 @@
+# DBサーバで実行するTask
+
+- name: リポジトリの登録
+  yum:
+    name: http://repo.mysql.com/mysql57-community-release-el7-10.noarch.rpm
+    state: installed
+
+- name: MySQLをインストール
+  yum:
+    name: mysql-server
+    state: installed
+
+- name: Ansible用MySQLモジュールで必要なパッケージのインストール
+  yum:
+    name: MySQL-python
+    state: installed
+
+- name: mysqld起動・自動起動設定
+  service:
+    name: mysqld
+    state: started
+    enabled: yes
+
+- name: 現在の仮パスワードを取得
+  shell: "grep 'A temporary password is generated for root@localhost' /var/log/mysqld.log | awk -F ' ' '{print $(NF)}'"
+  register: root_password
+
+- name: validate_passwordプラグインの設定を変更
+  command: mysql --user root --password={{ root_password.stdout }} --connect-expired-password --execute="SET GLOBAL validate_password_length=4;SET GLOBAL validate_password_policy=LOW;"
+
+- name: rootユーザーのパスワードを更新
+  command: mysql --user root --password={{ root_password.stdout }} --connect-expired-password --execute="SET PASSWORD = PASSWORD('{{ mysql.root.password }}');"
+
+- name: rootユーザーを作成
+  mysql_user:
+    login_user: root
+    login_password: root
+    name: 'root'
+    password: '{{ mysql.root.password }}'
+    priv: '*.*:ALL,GRANT'
+    state: present
+    host: '%'
+
+- name: anonymousユーザーの削除
+  mysql_user:
+    login_user: root
+    login_password: root
+    name: ''
+    host: '{{ item }}'
+    state: absent
+  with_items:
+    - localhost.localdomain
+    - localhost
+
+- name: 既存rootユーザーのパスワードを変更
+  mysql_user:
+    login_user: root
+    login_password: root
+    name: 'root'
+    host: '{{ item }}'
+    password: '{{ mysql.root.password }}'
+  with_items:
+    - 127.0.0.1
+    - ::1
+    - localhost.localdomain
+    - localhost
+
+- name: rootユーザー接続設定ファイルを転送
+  template:
+    src: my.cnf.j2
+    dest: /root/.my.cnf
+    owner: root
+    group: root
+    mode: 0600
+
+- name: データベースを作成
+  mysql_db:
+    name: '{{ item }}'
+    state: present
+  with_items:
+    - '{{ mysql.database.development }}'
+    - '{{ mysql.database.test }}'
+    - '{{ mysql.database.production }}'
+
+- name: クライアントユーザーを作成
+  mysql_user:
+    name: '{{ item.username }}'
+    password: '{{ item.password }}'
+    priv: '*.*:ALL,GRANT'
+    state: present
+    host: '%'
+  with_items:
+    - '{{ mysql.users }}'
+
+- name: MySQLのポートを開放
+  firewalld:
+    port: 3306/tcp
+    permanent: true
+    state: enabled
+    immediate: yes

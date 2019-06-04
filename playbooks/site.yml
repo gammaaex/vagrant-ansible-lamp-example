@@ -1,0 +1,29 @@
+# 実行するタスク
+
+- name: 全ノードに適用する一般的なセットアップ
+  hosts: all
+  connection: local
+  remote_user: root
+  roles:
+    - common
+
+- name: データベースサーバのセットアップ
+  hosts: dbservers
+  connection: local
+  remote_user: root
+  roles:
+    - db
+
+- name: 公開サーバのセットアップ
+  hosts: webservers
+  connection: local
+  remote_user: root
+  roles:
+    - web
+
+- name: 管理用サーバのセットアップ
+  hosts: adminservers
+  connection: local
+  remote_user: root
+  roles:
+    - admin

@@ -1,0 +1,32 @@
+# Apacheをインストール
+
+- name: 最新のApacheをインストール
+  yum:
+    name: httpd
+    state: latest
+
+- name: httpdの起動と自動起動設定
+  service:
+    name: httpd
+    state: started
+    enabled: yes
+
+- name: httpd.confを転送
+  template:
+    src: httpd.conf
+    dest: /etc/httpd/conf/httpd.conf
+    owner: root
+    group: root
+    mode: 0600
+
+- name: httpdを再起動
+  service:
+    name: httpd
+    state: restarted
+
+- name: Apacheのポートを開放
+  firewalld:
+    port: 80/tcp
+    permanent: true
+    state: enabled
+    immediate: yes

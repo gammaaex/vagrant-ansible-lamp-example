@@ -1,0 +1,10 @@
+# WebサーバのTask
+
+- include: php.yml
+- include: httpd.yml
+- include: composer.yml
+
+- name: Gitをインストール
+  yum:
+    name: git
+    state: installed

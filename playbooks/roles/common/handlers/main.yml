@@ -1,0 +1,6 @@
+# notifyを受け取って実行されるJob
+
+- name: sshdを再起動
+  service:
+    name: sshd
+    state: restarted

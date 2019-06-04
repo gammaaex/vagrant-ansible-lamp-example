@@ -1,0 +1,35 @@
+# 全ホストで実行するTask
+
+- name: SELinuxを停止
+  become: yes
+  command: setenforce 0
+
+- name: firewalldを起動
+  service:
+    name: firewalld
+    state: started
+    enabled: yes
+
+- name: SSHのポートを開放
+  firewalld:
+    port: 22/tcp
+    permanent: true
+    state: enabled
+    immediate: yes
+
+- name: パスワード認証を禁止
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: '^PasswordAuthentication'
+    line: 'PasswordAuthentication no'
+    state: present
+  notify: sshdを再起動
+
+- name: 一般的に利用するパッケージをインストール
+  yum:
+    name: '{{ item }}'
+    state: installed
+  with_items:
+    - vim
+    - zip
+    - unzip
